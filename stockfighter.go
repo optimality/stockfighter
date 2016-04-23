@@ -6,17 +6,29 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 )
 
 const (
-	StarfighterAuthHeader = "X-Starfighter-Authorization"
-	APIKey                = "ca083dd82693514b2beac199fe09cc60313bbefc"
-	BaseURL               = "https://api.stockfighter.io/ob/api"
+	StockfighterAPIKeyEnvVar = "STOCKFIGHTER_API_KEY"
+	StarfighterAuthHeader    = "X-Starfighter-Authorization"
+	BaseURL                  = "https://api.stockfighter.io/ob/api"
 )
 
 type StockfighterClient struct {
 	Client http.Client
+	APIKey string
+}
+
+func NewStockfighterClient() (StockfighterClient, error) {
+	client := StockfighterClient{
+		APIKey: os.Getenv(StockfighterAPIKeyEnvVar),
+	}
+	if client.APIKey == "" {
+		return client, fmt.Errorf("%v not set.", StockfighterAPIKeyEnvVar)
+	}
+	return client, nil
 }
 
 type StockfighterResponse struct {
@@ -50,7 +62,7 @@ func (s StockfighterClient) Do(method string, url string, body interface{}, resp
 	if err != nil {
 		return fmt.Errorf("Failed to make request: %v", err)
 	}
-	request.Header.Add(StarfighterAuthHeader, APIKey)
+	request.Header.Add(StarfighterAuthHeader, s.APIKey)
 	resp, err := s.Client.Do(request)
 	if err != nil {
 		return fmt.Errorf("Error getting URL: %v", err)

@@ -9,15 +9,23 @@ const (
 	NonVenue    = "NONVENUE"
 )
 
+func MakeStockfighterClient(t *testing.T) StockfighterClient {
+	client, err := NewStockfighterClient()
+	if err != nil {
+		t.Fatalf("Failed to get client: %v\n", err)
+	}
+	return client
+}
+
 func TestHeartbeat(t *testing.T) {
-	client := StockfighterClient{}
+	client := MakeStockfighterClient(t)
 	if !client.Heartbeat() {
 		t.Fatalf("Failed to detect a heartbeat.\n")
 	}
 }
 
 func TestVenueHeartbeat(t *testing.T) {
-	client := StockfighterClient{}
+	client := MakeStockfighterClient(t)
 	if !client.VenueHeartbeat(TestVenue) {
 		t.Fatalf("Failed to detect venue heartbeat.\n")
 	}
@@ -28,7 +36,7 @@ func TestVenueHeartbeat(t *testing.T) {
 }
 
 func TestStocks(t *testing.T) {
-	client := StockfighterClient{}
+	client := MakeStockfighterClient(t)
 	stocks, err := client.Stocks(TestVenue)
 	if err != nil {
 		t.Fatalf("Failed to get stocks: %v\n Stocks: %+v\n", err, stocks)
@@ -53,7 +61,7 @@ func TestStocks(t *testing.T) {
 }
 
 func TestOrders(t *testing.T) {
-	client := StockfighterClient{}
+	client := MakeStockfighterClient(t)
 	orders, err := client.Orders(TestVenue, TestStock)
 	if err != nil {
 		t.Fatalf("Failed to get orders: %v\n Orders: %+v\n", err, orders)
@@ -61,7 +69,7 @@ func TestOrders(t *testing.T) {
 }
 
 func TestPostOrders(t *testing.T) {
-	client := StockfighterClient{}
+	client := MakeStockfighterClient(t)
 	postOrder, err := client.PostOrder(PostOrderRequest{
 		Venue:     TestVenue,
 		Account:   TestAccount,
@@ -77,7 +85,7 @@ func TestPostOrders(t *testing.T) {
 }
 
 func TestQuote(t *testing.T) {
-	client := StockfighterClient{}
+	client := MakeStockfighterClient(t)
 	quote, err := client.Quote(TestVenue, TestStock)
 	if err != nil {
 		t.Fatalf("Error getting quote: %v\n Quote: %+v\n", err, quote)
@@ -85,7 +93,7 @@ func TestQuote(t *testing.T) {
 }
 
 func TestOrder(t *testing.T) {
-	client := StockfighterClient{}
+	client := MakeStockfighterClient(t)
 	postOrder, err := client.PostOrder(PostOrderRequest{
 		Venue:     TestVenue,
 		Account:   TestAccount,
@@ -106,7 +114,7 @@ func TestOrder(t *testing.T) {
 }
 
 func TestCancel(t *testing.T) {
-	client := StockfighterClient{}
+	client := MakeStockfighterClient(t)
 	postOrder, err := client.PostOrder(PostOrderRequest{
 		Venue:     TestVenue,
 		Account:   TestAccount,
@@ -130,7 +138,7 @@ func TestCancel(t *testing.T) {
 }
 
 func TestAccountOrders(t *testing.T) {
-	client := StockfighterClient{}
+	client := MakeStockfighterClient(t)
 	orders, err := client.AccountOrders(TestVenue, TestAccount)
 	if err != nil {
 		t.Fatalf("Error getting account orders: %v\n Order: %+v\n", err, orders)
@@ -138,7 +146,7 @@ func TestAccountOrders(t *testing.T) {
 }
 
 func TestAccountStockOrders(t *testing.T) {
-	client := StockfighterClient{}
+	client := MakeStockfighterClient(t)
 	orders, err := client.AccountStockOrders(TestVenue, TestAccount, TestStock)
 	if err != nil {
 		t.Fatalf("Error getting account orders: %v\n Order: %+v\n", err, orders)
