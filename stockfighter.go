@@ -13,7 +13,8 @@ import (
 const (
 	StockfighterAPIKeyEnvVar = "STOCKFIGHTER_API_KEY"
 	StarfighterAuthHeader    = "X-Starfighter-Authorization"
-	BaseURL                  = "https://api.stockfighter.io/ob/api"
+	BaseURL                  = "https://api.stockfighter.io"
+	BotURL                   = "/ob/api"
 )
 
 type StockfighterClient struct {
@@ -83,7 +84,7 @@ func (s StockfighterClient) Do(method string, url string, body interface{}, resp
 
 func (s StockfighterClient) Heartbeat() bool {
 	stockfighterResponse := StockfighterResponse{}
-	err := s.Do("GET", "/heartbeat", nil, &stockfighterResponse)
+	err := s.Do("GET", BotURL+"/heartbeat", nil, &stockfighterResponse)
 	if err != nil {
 		return false
 	}
@@ -92,7 +93,7 @@ func (s StockfighterClient) Heartbeat() bool {
 
 func (s StockfighterClient) VenueHeartbeat(venue string) bool {
 	stockfighterResponse := StockfighterResponse{}
-	err := s.Do("GET", fmt.Sprintf("/venues/%v/heartbeat", venue), nil, &stockfighterResponse)
+	err := s.Do("GET", fmt.Sprintf(BotURL+"/venues/%v/heartbeat", venue), nil, &stockfighterResponse)
 	if err != nil {
 		return false
 	}
@@ -111,7 +112,7 @@ type StocksResponse struct {
 
 func (s StockfighterClient) Stocks(venue string) (StocksResponse, error) {
 	stocksResponse := StocksResponse{}
-	err := s.Do("GET", fmt.Sprintf("/venues/%v/stocks", venue), nil, &stocksResponse)
+	err := s.Do("GET", fmt.Sprintf(BotURL+"/venues/%v/stocks", venue), nil, &stocksResponse)
 	return stocksResponse, err
 }
 
@@ -132,7 +133,7 @@ type OrdersResponse struct {
 
 func (s StockfighterClient) Orders(venue string, stock string) (OrdersResponse, error) {
 	ordersResponse := OrdersResponse{}
-	err := s.Do("GET", fmt.Sprintf("/venues/%v/stocks/%v", venue, stock), nil, &ordersResponse)
+	err := s.Do("GET", fmt.Sprintf(BotURL+"/venues/%v/stocks/%v", venue, stock), nil, &ordersResponse)
 	return ordersResponse, err
 }
 
@@ -191,7 +192,7 @@ type Fill struct {
 // Note: /venues/:venue/stocks/:stock seems to allow POST as an internal endpoint, but needs an internal key.
 func (s StockfighterClient) PostOrder(request PostOrderRequest) (OrderStatusResponse, error) {
 	orderStatus := OrderStatusResponse{}
-	err := s.Do("POST", fmt.Sprintf("/venues/%v/stocks/%v/orders", request.Venue, request.Stock), request, &orderStatus)
+	err := s.Do("POST", fmt.Sprintf(BotURL+"/venues/%v/stocks/%v/orders", request.Venue, request.Stock), request, &orderStatus)
 	return orderStatus, err
 }
 
@@ -213,7 +214,7 @@ type QuoteResponse struct {
 
 func (s StockfighterClient) Quote(venue string, stock string) (QuoteResponse, error) {
 	quoteResponse := QuoteResponse{}
-	err := s.Do("GET", fmt.Sprintf("/venues/%v/stocks/%v/quote", venue, stock), nil, &quoteResponse)
+	err := s.Do("GET", fmt.Sprintf(BotURL+"/venues/%v/stocks/%v/quote", venue, stock), nil, &quoteResponse)
 	return quoteResponse, err
 }
 
@@ -223,13 +224,13 @@ type OrderResponse struct {
 
 func (s StockfighterClient) Order(venue string, stock string, order int) (OrderStatusResponse, error) {
 	orderStatus := OrderStatusResponse{}
-	err := s.Do("GET", fmt.Sprintf("/venues/%v/stocks/%v/orders/%v", venue, stock, order), nil, &orderStatus)
+	err := s.Do("GET", fmt.Sprintf(BotURL+"/venues/%v/stocks/%v/orders/%v", venue, stock, order), nil, &orderStatus)
 	return orderStatus, err
 }
 
 func (s StockfighterClient) Cancel(venue string, stock string, order int) (OrderStatusResponse, error) {
 	orderStatus := OrderStatusResponse{}
-	err := s.Do("DELETE", fmt.Sprintf("/venues/%v/stocks/%v/orders/%v", venue, stock, order), nil, &orderStatus)
+	err := s.Do("DELETE", fmt.Sprintf(BotURL+"/venues/%v/stocks/%v/orders/%v", venue, stock, order), nil, &orderStatus)
 	return orderStatus, err
 }
 
@@ -241,12 +242,12 @@ type AccountOrdersResponse struct {
 
 func (s StockfighterClient) AccountOrders(venue string, account string) (AccountOrdersResponse, error) {
 	accountOrdersResponse := AccountOrdersResponse{}
-	err := s.Do("GET", fmt.Sprintf("/venues/%v/accounts/%v/orders", venue, account), nil, &accountOrdersResponse)
+	err := s.Do("GET", fmt.Sprintf(BotURL+"/venues/%v/accounts/%v/orders", venue, account), nil, &accountOrdersResponse)
 	return accountOrdersResponse, err
 }
 
 func (s StockfighterClient) AccountStockOrders(venue string, account string, stock string) (AccountOrdersResponse, error) {
 	accountOrdersResponse := AccountOrdersResponse{}
-	err := s.Do("GET", fmt.Sprintf("/venues/%v/accounts/%v/stocks/%v/orders", venue, account, stock), nil, &accountOrdersResponse)
+	err := s.Do("GET", fmt.Sprintf(BotURL+"/venues/%v/accounts/%v/stocks/%v/orders", venue, account, stock), nil, &accountOrdersResponse)
 	return accountOrdersResponse, err
 }
