@@ -1,0 +1,2 @@
+# stockfighter
+Stockfighter contest repo.
