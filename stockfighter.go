@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"golang.org/x/net/websocket"
 )
 
 const (
@@ -198,6 +200,10 @@ func (s StockfighterClient) PostOrder(request PostOrderRequest) (OrderStatusResp
 
 type QuoteResponse struct {
 	StockfighterResponse
+	Quote
+}
+
+type Quote struct {
 	Venue     string    `json:"venue"`
 	Symbol    string    `json:"symbol"`
 	Bid       int       `json:"bid"`
@@ -212,7 +218,7 @@ type QuoteResponse struct {
 	Timestamp time.Time `json:"quoteTime"`
 }
 
-func (s StockfighterClient) Quote(venue string, stock string) (QuoteResponse, error) {
+func (s StockfighterClient) GetQuote(venue string, stock string) (QuoteResponse, error) {
 	quoteResponse := QuoteResponse{}
 	err := s.Do("GET", fmt.Sprintf(BotURL+"/venues/%v/stocks/%v/quote", venue, stock), nil, &quoteResponse)
 	return quoteResponse, err
@@ -250,4 +256,66 @@ func (s StockfighterClient) AccountStockOrders(venue string, account string, sto
 	accountOrdersResponse := AccountOrdersResponse{}
 	err := s.Do("GET", fmt.Sprintf(BotURL+"/venues/%v/accounts/%v/stocks/%v/orders", venue, account, stock), nil, &accountOrdersResponse)
 	return accountOrdersResponse, err
+}
+
+type QuoteMessage struct {
+	StockfighterResponse
+	Quote Quote `json:"quote"`
+}
+
+func (s StockfighterClient) GetQuoteSocket(venue string, account string) (chan QuoteMessage, error) {
+	url := fmt.Sprintf("wss://api.stockfighter.io/ob/api/ws/%v/venues/%v/tickertape", account, venue)
+	conn, err := websocket.Dial(url, "", "http://localhost")
+	if err != nil {
+		return nil, err
+	}
+	c := make(chan QuoteMessage)
+	go func() {
+		for {
+			message := QuoteMessage{}
+			err := websocket.JSON.Receive(conn, &message)
+			if err != nil {
+				close(c)
+				return
+			}
+			c <- message
+		}
+	}()
+	return c, nil
+}
+
+type ExecutionMessage struct {
+	StockfighterResponse
+	Account          string              `json:"account"`
+	Venue            string              `json:"venue"`
+	Symbol           string              `json:"symbol"`
+	Order            OrderStatusResponse `json:"order"`
+	StandingID       int                 `json:"standingId"`
+	IncomingID       int                 `json:"incomingId"`
+	Price            int                 `json:"price"`
+	Filled           int                 `json:"filled"`
+	FilledAt         time.Time           `json:"filledAt"`
+	StandingComplete bool                `json:"standingComplete"`
+	IncomingComplete bool                `json:"incomingComplete"`
+}
+
+func (s StockfighterClient) GetExecutionSocket(venue string, account string) (chan ExecutionMessage, error) {
+	url := fmt.Sprintf("wss://api.stockfighter.io/ob/api/ws/%v/venues/%v/executions", account, venue)
+	conn, err := websocket.Dial(url, "", "http://localhost")
+	if err != nil {
+		return nil, err
+	}
+	c := make(chan ExecutionMessage)
+	go func() {
+		for {
+			message := ExecutionMessage{}
+			err := websocket.JSON.Receive(conn, &message)
+			if err != nil {
+				close(c)
+				return
+			}
+			c <- message
+		}
+	}()
+	return c, nil
 }
